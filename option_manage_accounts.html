@@ -1,0 +1,186 @@
+<!doctype html>
+<html>
+<head>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js" type="text/javascript"></script>
+<script src="ec2/utilities.js" type="text/javascript"></script>
+<script src="ec2/accountmanager.js" type="text/javascript"></script>
+<script>
+////////////////////////////////////////////////////////////////////////////////
+//
+//  ElasticChrome
+//
+//  Copyright (c) 2010 Andrey Kurdiumov, All Rights Reserved
+//  Maintainer: kant2002@gmail.com
+//  Source code for this work could be obtained from: http://code.google.com/p/elastic-chrome
+//  
+//  License: GPL v3
+// 
+//  This file is part of ElasticChrome.
+//  
+//  ElasticChrome is free software: you can redistribute it and/or modify
+//  it under the terms of the GNU General Public License as published by
+//  the Free Software Foundation, either version 3 of the License, or
+//  (at your option) any later version.
+//  
+//  ElasticChrome is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//  
+//  You should have received a copy of the GNU General Public License
+//  along with ElasticChrome.  If not, see <http://www.gnu.org/licenses/>.
+// 
+////////////////////////////////////////////////////////////////////////////////
+
+
+// Make sure the checkbox checked state gets properly initialized from the
+// saved preference.
+$(function() {
+  var manager = new ec2.AccountManager();
+
+  /*$("#accounts").data('list', accounts);*/
+
+  var save = function () {
+/*    var prefs = JSON.parse(localStorage.prefs);
+    if (prefs.accounts == null)
+    {
+  	  prefs.accounts = { list: null };
+    }
+    prefs.accounts.list = $("#accounts").data('list');
+    
+    localStorage.prefs = JSON.stringify(prefs);*/
+    manager.save();
+    location.href = "options.html";
+  }
+
+  var back = function ()
+  {
+  	location.href = "options.html";
+  }
+
+  var add_account = function () {
+
+  	var name = $("#name").val(); 
+  	var access_key = $("#access_key").val();
+  	var secret_key = $("#secret_key").val();
+  	manager.add(name, access_key, secret_key);
+
+  	load_accounts();
+  	update_current_account();
+  }
+
+  var update_account = function () {
+  	var accounts = manager.accounts;
+  	if (accounts == null)
+  	{
+  		alert('Could not update current account. No account is selected.');
+  		return;
+  	}
+  	var name = $("#accounts").val();
+  	if (name == '' || name == null) 
+  	{
+  		alert('Could not update current account. No account is selected.');
+  		return;
+  	}	
+
+  	var access_key = $("#access_key").val();
+  	var secret_key = $("#secret_key").val();
+	manager.update(name, access_key, secret_key);
+  };
+
+  var remove_account = function () {
+  	var accounts = manager.accounts;
+  	if (accounts == null || accounts.length == 0)
+  	{
+  		alert('Could not remove account. Account list is empty.');
+  		return;
+  	}
+  	
+  	var name = $("#accounts").val();
+  	if (name == '' || name == null) 
+  	{
+  		alert('Could not remove current account. No account is selected.');
+  		return;
+  	}
+
+  	manager.remove(name);	
+  	load_accounts();
+   };
+  
+  var load_accounts = function(){
+
+	  $("#accounts").html('');	  
+	  for ( var i in manager.accounts) {
+		  account_data = manager.accounts[i];
+		  var option_html = '<option value="' + account_data.name + '">' + account_data.name + '</option>';
+		  $("#accounts").append(option_html);
+	  }
+  };
+
+  var update_current_account = function(){
+	  update_ui();
+	  var name = $("#accounts").val();
+	  if (name == '' || name == null) 
+		  return;
+	  account_data = manager.get(name);
+
+	  $("#name").val(account_data.name);
+	  $("#access_key").val(account_data.access_key);
+	  $("#secret_key").val(account_data.secret_key);
+  };
+
+  var update_ui = function(){
+	  accounts = manager.accounts;
+	  var name = $("#accounts").val();
+	  if (name == '' || name == null) 
+	  {
+		  $("#button_update").attr('disabled', true);
+		  $("#button_remove").attr('disabled', true);
+	  }
+	  else
+	  {
+		  $("#button_update").attr('disabled', false); 
+		  $("#button_remove").attr('disabled', false);
+	  }
+  };
+
+  
+  $("#accounts").change(update_current_account);
+  load_accounts();
+  update_current_account();
+
+  $("#button_save").bind('click', save);
+  $("#button_back").bind('click', back);
+  
+  $("#button_add").bind('click', add_account);
+  $("#button_update").bind('click', update_account);
+  $("#button_remove").bind('click', remove_account);
+  
+});
+
+</script>
+</head>
+<body>
+<h2>Options for Elastic Chrome - Manage Accounts</h2>
+<br/>
+Accounts: 
+<br>
+<select id="accounts" multiple="multiple">
+
+</select>
+<br/>
+Name:
+<input id="name" type="text" name="name" /><br/>
+Access Key:
+<input id="access_key" type="text" name="access_key" /><br/>
+Secret Key:
+<input id="secret_key" type="password" name="secret_key" />
+<br/>
+<button id="button_add">Add</button>
+<button id="button_update">Update</button>
+<button id="button_remove">Remove</button>
+<br />
+<button id="button_save">Save Changes</button>
+<button id="button_back">Go back</button>
+</body>
+</html>
