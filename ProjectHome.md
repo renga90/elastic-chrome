@@ -1,0 +1,1 @@
+Custom extension which will allows managing of such AWS services like EC2, S3 and others.
